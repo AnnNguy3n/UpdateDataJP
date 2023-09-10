@@ -1,7 +1,7 @@
 from Crawl.PATH_SAVE import TEST_MODE, N, FOLDER_SAVE, NUM_THREAD, create_folders, CRAWL_ORDER
 from Crawl.IrBank import ListCompany, Financial as IrFinancial
 from Crawl.MorningStar import Financial as MorFinancial
-from Crawl.YahooJP import PriceClosed as YaJpPriceClosed
+from Crawl.YahooJP import PriceClosed as YaJpPriceClosed, Dividend as YaJpDividned
 from Crawl.Kabu import Dividend as KabuDividend
 
 import pandas as pd
@@ -47,8 +47,8 @@ for name in CRAWL_ORDER:
         crl_3.get_all_data(num_thread=NUM_THREAD)
     
     elif name == "Dividend":
-        # crl_4 = YaJpDividned()
-        # crl_4.get_all_dividend()
+        crl_4 = YaJpDividned()
+        crl_4.get_all_dividend()
 
         crl_5 = KabuDividend()
         crl_5.get_all_data()

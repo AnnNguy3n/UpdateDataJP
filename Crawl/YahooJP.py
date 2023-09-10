@@ -8,6 +8,7 @@ import os
 from __init__ import options
 import time
 from Crawl.PATH_SAVE import CRAWL_DATE, FOLDER_SAVE
+from datetime import timedelta
 
 # ===========================================================================
 
@@ -150,4 +151,54 @@ class PriceClosed:
 
             self.sleep_time += 0.5
 
+        print("Xong", flush=True)
+
+# ===========================================================================
+
+class Dividend:
+    def __init__(self, PATH_SAVE=FOLDER_SAVE) -> None:
+        PATH_SAVE = os.path.abspath(PATH_SAVE)
+        self.folder_F0_price = PATH_SAVE + "\\Price\\YahooJP\\F0"
+        self.list_path = os.listdir(self.folder_F0_price)
+        self.folder_save = PATH_SAVE + "\\Dividend\\YahooJP\\F0"
+
+    def get_all_dividend(self):
+        print("===== Lấy Dividend từ Price YahooJP =====", flush=True)
+        df_rs = pd.DataFrame({"Symbol": [], "Time": [], "PriceClosed": [], "VolumeTrade": []})
+        list_error = []
+        for jj in range(len(self.list_path)):
+            path = self.list_path[jj]
+            try:
+                if path != "check.csv":
+                    data = pd.read_csv(self.folder_F0_price+"\\"+path)[["日付", "終値", "出来高"]]
+                    data.columns = ["Time", "PriceClosed", "VolumeTrade"]
+                    data["Check"] = pd.to_numeric(data["PriceClosed"], errors="coerce")
+                    temp = data[data["Check"].isna()].copy()
+                    temp.pop("Check")
+                    temp["Symbol"] = path.split(".")[0]
+                    list_index = []
+                    for i in temp.index:
+                        new_time_id = i + 2
+                        try:
+                            new_time = data.loc[new_time_id, "Time"]
+                            temp.loc[i, "Time"] = new_time
+                            list_index.append(i)
+                        except:
+                            pass
+
+                    df_rs = pd.concat([df_rs, temp.loc[list_index, ["Symbol", "Time", "PriceClosed", "VolumeTrade"]]], ignore_index=True)
+                    print(jj, path, "Done", flush=True)
+            except:
+                list_error.append(path)
+                print(jj, path, "Error", flush=True)
+
+        df_rs["temp"] = df_rs["PriceClosed"].str.split("分割：").str.get(1)
+        df_rs["old"] = df_rs["temp"].str.split("株→").str.get(0)
+        df_rs["new"] = df_rs["temp"].str.split("株→").str.get(1).str.split("株").str.get(0)
+        df_rs["Splits"] = df_rs["old"].combine(df_rs["new"], lambda x, y: x + "/" + y)
+        df_save = df_rs[["Symbol", "Time", "PriceClosed", "Splits"]].copy()
+        df_save.rename(columns={"PriceClosed": "Content"}, inplace=True)
+        df_save["Time"] = df_save["Time"].apply(lambda x: (pd.to_datetime(x, format="%Y年%m月%d日") + timedelta(1)).strftime("%Y/%m/%d"))
+        df_save.to_csv(self.folder_save + "\\All_dividend.csv", index=False)
+        pd.DataFrame({"Error": list_error}).to_csv(self.folder_save + "\\error.csv", index=False)
         print("Xong", flush=True)
