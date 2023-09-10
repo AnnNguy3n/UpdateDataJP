@@ -1,25 +1,30 @@
 import os
 from datetime import datetime
 
-# Test mode: Lưu lại n công ty ngẫu nhiên và crawl dữ liệu
-TEST_MODE = False
+# Test_mode: Lưu lại N công ty ngẫu nhiên và crawl dữ liệu
+TEST_MODE = True
 N = 100
 
-# Đường dẫn của folder ingestion và ngày crawl
-PATH_INGESTION = "C:\\Users\\AnnNg\\OneDrive\\Desktop\\Data_Nhat\\UpdateDataJapan\\SAVE"
-DATE_CRAWL = "2023/09/06"
-# DATE_CRAWL = "AUTO"
+# Đường dẫn đến folder ingestion
+INGESTION_PATH = "C:\\Users\\AnnNg\\OneDrive\\Desktop\\DataJP\\Ingestion"
 
-# Chỉnh thứ tự Crawl
-# Price phải được crawl trước dividend
+# Chỉnh ngày crawl hoặc để "AUTO", nhớ comment cái còn lại
+# CRAWL_DATE = "2023/09/01"
+CRAWL_DATE = "AUTO"
+
+# Chỉnh những phần cần Crawl và thứ tự, Price phải được crawl trước Dividend
 CRAWL_ORDER = ["Financial", "Price", "Dividend", "Volume"]
 
-# Chỉnh số luồng tại đây
+# Chỉnh số luồng thực hiện Crawl
 NUM_THREAD = 6
 
 # ===========================================================================
 
-FOLDER_SAVE = f'{PATH_INGESTION}\\{"_".join(DATE_CRAWL.split("/"))}'
+if CRAWL_DATE == "AUTO":
+    now = datetime.now()
+    CRAWL_DATE = f"{now.year}/{now.month}/{now.day}"
+
+FOLDER_SAVE = f"{INGESTION_PATH}\\{'_'.join(CRAWL_DATE.split('/'))}"
 
 
 def create_folder_financial():
@@ -60,7 +65,7 @@ def create_folder_volume():
     Buffet_F0 = folder_volume + "\\Buffet\\F0"
     os.makedirs(Buffet_F0, exist_ok=True)
 
-def create_folder():
+def create_folders():
     os.makedirs(FOLDER_SAVE + "\\List_com", exist_ok=True)
     create_folder_financial()
     create_folder_price()

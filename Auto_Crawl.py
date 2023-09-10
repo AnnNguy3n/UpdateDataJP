@@ -1,14 +1,15 @@
-from Crawl.PATH_SAVE import *
+from Crawl.PATH_SAVE import TEST_MODE, N, FOLDER_SAVE, NUM_THREAD, create_folders, CRAWL_ORDER
 from Crawl.IrBank import ListCompany, Financial as IrFinancial
-from Crawl.MorningStar import Financial as MorFinancial, Volume as MorVolume
+from Crawl.MorningStar import Financial as MorFinancial
 from Crawl.YahooJP import PriceClosed as YaJpPriceClosed, Dividend as YaJpDividned
 from Crawl.Kabu import Dividend as KabuDividend
-from Crawl.Buffet import Volume as BufVolume
+
 import pandas as pd
 
-create_folder()
+# Tạo folder lưu
+create_folders()
 
-# Crawl list_code
+# Crawl company_codes
 try:
     df_code = pd.read_csv(FOLDER_SAVE + "\\List_com\\list_code_full.csv")
     df_code_saved = pd.read_csv(FOLDER_SAVE + "\\List_com\\list_code.csv")
@@ -51,13 +52,3 @@ for name in CRAWL_ORDER:
 
         crl_5 = KabuDividend()
         crl_5.get_all_data()
-
-    elif name == "Volume":
-        crl_6 = MorVolume()
-        crl_6.get_all_volume(num_thread=NUM_THREAD)
-
-        crl_7 = BufVolume()
-        crl_7.get_all_volume(num_thread=NUM_THREAD)
-
-    else:
-        raise Exception("Không đúng")

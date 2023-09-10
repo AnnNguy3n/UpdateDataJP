@@ -7,14 +7,15 @@ from Crawl.Base.URLs import YahooJP as URL
 import os
 from __init__ import options
 import time
-from Crawl.PATH_SAVE import DATE_CRAWL, FOLDER_SAVE
+from Crawl.PATH_SAVE import CRAWL_DATE, FOLDER_SAVE
+from datetime import timedelta
 
 # ===========================================================================
 
 class PriceClosed:
     def __init__(self, num_year=2, wait_after_click=1) -> None:
-        max_time = DATE_CRAWL
-        min_time = str(int(DATE_CRAWL[:4]) - num_year) + DATE_CRAWL[4:]
+        max_time = CRAWL_DATE
+        min_time = str(int(CRAWL_DATE[:4]) - num_year) + CRAWL_DATE[4:]
         self.URL = URL.PRICE_CLOSED.replace("__START_DATE__", "".join(min_time.split("/")))\
                     .replace("__END_DATE__", "".join(max_time.split("/")))
         self.sleep_time = wait_after_click
@@ -162,13 +163,6 @@ class Dividend:
         self.folder_save = PATH_SAVE + "\\Dividend\\YahooJP\\F0"
 
     def get_all_dividend(self):
-        try:
-            pd.read_csv(self.folder_save + "\\all_dividend.csv")
-            print("File dividend (YahooJP) đã có từ trước nên không chạy nữa", flush=True)
-            return
-        except:
-            pass
-        
         print("===== Lấy Dividend từ Price YahooJP =====", flush=True)
         df_rs = pd.DataFrame({"Symbol": [], "Time": [], "PriceClosed": [], "VolumeTrade": []})
         list_error = []
@@ -182,18 +176,29 @@ class Dividend:
                     temp = data[data["Check"].isna()].copy()
                     temp.pop("Check")
                     temp["Symbol"] = path.split(".")[0]
-                    df_rs = pd.concat([df_rs, temp[["Symbol", "Time", "PriceClosed", "VolumeTrade"]]], ignore_index=True)
+                    list_index = []
+                    for i in temp.index:
+                        new_time_id = i + 2
+                        try:
+                            new_time = data.loc[new_time_id, "Time"]
+                            temp.loc[i, "Time"] = new_time
+                            list_index.append(i)
+                        except:
+                            pass
+
+                    df_rs = pd.concat([df_rs, temp.loc[list_index, ["Symbol", "Time", "PriceClosed", "VolumeTrade"]]], ignore_index=True)
                     print(jj, path, "Done", flush=True)
             except:
                 list_error.append(path)
                 print(jj, path, "Error", flush=True)
-        
+
         df_rs["temp"] = df_rs["PriceClosed"].str.split("分割：").str.get(1)
         df_rs["old"] = df_rs["temp"].str.split("株→").str.get(0)
         df_rs["new"] = df_rs["temp"].str.split("株→").str.get(1).str.split("株").str.get(0)
-        df_rs["Splits"] = df_rs["new"].combine(df_rs["old"], lambda x, y: x + "/" + y)
+        df_rs["Splits"] = df_rs["old"].combine(df_rs["new"], lambda x, y: x + "/" + y)
         df_save = df_rs[["Symbol", "Time", "PriceClosed", "Splits"]].copy()
         df_save.rename(columns={"PriceClosed": "Content"}, inplace=True)
-        df_save.to_csv(self.folder_save + "\\all_dividend.csv", index=False)
+        df_save["Time"] = df_save["Time"].apply(lambda x: (pd.to_datetime(x, format="%Y年%m月%d日") + timedelta(1)).strftime("%Y/%m/%d"))
+        df_save.to_csv(self.folder_save + "\\All_dividend.csv", index=False)
         pd.DataFrame({"Error": list_error}).to_csv(self.folder_save + "\\error.csv", index=False)
         print("Xong", flush=True)

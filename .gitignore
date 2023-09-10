@@ -1,4 +1,2 @@
-SAVE/
-__pycache__/
-a.ipynb
-b.ipynb
+__local__*
+__pycache__

@@ -7,7 +7,7 @@ from __init__ import options
 from selenium import webdriver
 from Crawl.Base.Codes.Financial_IrBank import link_main_crawler, IrbankCrawler
 from Crawl.Base.URLs import IrBank as URL
-from Crawl.PATH_SAVE import DATE_CRAWL, FOLDER_SAVE
+from Crawl.PATH_SAVE import CRAWL_DATE, FOLDER_SAVE
 
 # ===========================================================================
 
@@ -131,8 +131,8 @@ class ListCompany:
 class Financial:
     def __init__(self, num_year=2) -> None:
         self.crawler = IrbankCrawler.IrbankCrawler("edge")
-        self.max_time = DATE_CRAWL[:-3]
-        self.min_time = str(int(DATE_CRAWL[:4]) - num_year) + DATE_CRAWL[4:-3]
+        self.max_time = CRAWL_DATE[:-3]
+        self.min_time = str(int(CRAWL_DATE[:4]) - num_year) + CRAWL_DATE[4:-3]
 
     def get_doc_codes(self, code, driver):
         try:

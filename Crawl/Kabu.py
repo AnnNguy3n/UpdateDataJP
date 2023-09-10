@@ -6,6 +6,7 @@ from Crawl.Base.URLs import Kabu as URL
 from __init__ import options
 from Crawl.PATH_SAVE import FOLDER_SAVE
 import time
+from datetime import timedelta
 
 # ===========================================================================
 
@@ -44,17 +45,48 @@ class Dividend:
 
             sleeptime += 2
 
+        list_temp = []
+
+        def split_1(value):
+            value = value.replace(" ", "")
+            temp = value.split("：")
+            return temp[0] + "/" + temp[1]
+
+        def split_2(value):
+            value = value.replace(" ", "")
+            value = value.replace("株", "")
+            temp = value.split("→")
+            return temp[1] + "/" + temp[0]
+
         if check1:
+            df_1.columns = df_1.columns.str.replace(" ", "")
             df_1.to_csv(self.folder_F0 + "\\table_1.csv", index=False)
             check.loc[0, "Check"] = "Done"
+            temp_1 = df_1[["銘柄コード", "割当比率", "権利付最終日"]].copy()
+            temp_1.columns = ["Symbol", "Splits", "Time"]
+            temp_1["Splits"] = temp_1["Splits"].apply(split_1)
+            list_temp.append(temp_1)
         else:
             check.loc[0, "Check"] = "Error"
 
         if check2:
+            df_2.columns = df_2.columns.str.replace(" ", "")
             df_2.to_csv(self.folder_F0 + "\\table_2.csv", index=False)
             check.loc[1, "Check"] = "Done"
+            temp_2 = df_2[["銘柄コード", "併合比率", "権利付最終日"]].copy()
+            temp_2.columns = ["Symbol", "Splits", "Time"]
+            temp_2["Splits"] = temp_2["Splits"].apply(split_2)
+            list_temp.append(temp_2)
         else:
             check.loc[1, "Check"] = "Error"
 
         check.to_csv(self.folder_F0 + "\\check.csv", index=False)
         print("Xong", flush=True)
+        for df in list_temp:
+            try:
+                data = pd.concat([data, df], ignore_index=True)
+            except:
+                data = df.copy()
+
+        data["Time"] = data["Time"].apply(lambda x: (pd.to_datetime(x) + timedelta(1)).strftime("%Y/%m/%d"))
+        data.drop_duplicates().to_csv(self.folder_F0 + "\\All_dividend.csv", index=False)
