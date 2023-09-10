@@ -1,8 +1,9 @@
 from Crawl.PATH_SAVE import TEST_MODE, N, FOLDER_SAVE, NUM_THREAD, create_folders, CRAWL_ORDER
 from Crawl.IrBank import ListCompany, Financial as IrFinancial
-from Crawl.MorningStar import Financial as MorFinancial
+from Crawl.MorningStar import Financial as MorFinancial, Volume as MorVolume
 from Crawl.YahooJP import PriceClosed as YaJpPriceClosed, Dividend as YaJpDividned
 from Crawl.Kabu import Dividend as KabuDividend
+from Crawl.Buffet import Volume as BufVolume
 
 import pandas as pd
 
@@ -52,3 +53,10 @@ for name in CRAWL_ORDER:
 
         crl_5 = KabuDividend()
         crl_5.get_all_data()
+
+    elif name == "Volume":
+        crl_6 = MorVolume()
+        crl_6.get_all_volume(num_thread=NUM_THREAD)
+
+        crl_7 = BufVolume()
+        crl_7.get_all_volume(num_thread=NUM_THREAD)
