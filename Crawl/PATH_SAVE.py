@@ -22,7 +22,17 @@ NUM_THREAD = 6
 
 if CRAWL_DATE == "AUTO":
     now = datetime.now()
-    CRAWL_DATE = f"{now.year}/{now.month}/{now.day}"
+    if now.month < 10:
+        month = "0" + str(now.month)
+    else:
+        month = str(now.month)
+
+    if now.day < 10:
+        day = "0" + str(now.day)
+    else:
+        day = str(now.day)
+
+    CRAWL_DATE = f"{now.year}/{month}/{day}"
 
 FOLDER_SAVE = f"{INGESTION_PATH}\\{'_'.join(CRAWL_DATE.split('/'))}"
 
