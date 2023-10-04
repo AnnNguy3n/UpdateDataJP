@@ -85,7 +85,9 @@ class PriceClosed:
                 continue
 
             if not driver_on:
-                driver = webdriver.Edge(options)
+                self.lock.acquire()
+                try: driver = webdriver.Edge(options)
+                finally: self.lock.release()
                 driver_on = True
 
             check, table = self.get_price_history(sym, driver)

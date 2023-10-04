@@ -188,7 +188,9 @@ class Financial:
                 continue
 
             if not driver_on:
-                driver = webdriver.Edge(options)
+                self.lock.acquire()
+                try: driver = webdriver.Edge(options)
+                finally: self.lock.release()
                 driver.set_page_load_timeout(60)
                 driver_on = True
 

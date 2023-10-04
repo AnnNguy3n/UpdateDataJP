@@ -95,7 +95,9 @@ class Financial:
                 continue
 
             if not driver_on:
-                driver = webdriver.Edge(self.list_crawler[thread_id].options)
+                self.lock.acquire()
+                try: driver = webdriver.Edge(self.list_crawler[thread_id].options)
+                finally: self.lock.release()
                 driver_on = True
 
             try:
@@ -219,7 +221,9 @@ class Volume:
                 continue
 
             if not driver_on:
-                driver = webdriver.Edge(options)
+                self.lock.acquire()
+                try: driver = webdriver.Edge(options)
+                finally: self.lock.release()
                 driver_on = True
 
             check, vol = self.get_volume(sym, driver)

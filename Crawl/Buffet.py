@@ -157,13 +157,14 @@ class Volume:
                     proxy_id = np.random.choice(min_fail.index)
                     proxy = self.df_proxy.loc[proxy_id, "proxy"]
                     self.df_proxy.loc[proxy_id, "BeingUsed"] = 1
-                    self.lock.release()
                 except:
-                    self.lock.release()
                     print("Đã có lỗi xảy ra", flush=True)
                     return
+                finally: self.lock.release()
 
-                driver = self.get_proxy_driver.checkDriver(proxy)
+                self.lock.acquire()
+                try: driver = self.get_proxy_driver.checkDriver(proxy)
+                finally: self.lock.release()
                 while driver is None:
                     self.lock.acquire()
                     try:
@@ -174,13 +175,14 @@ class Volume:
                         proxy_id = np.random.choice(min_fail.index)
                         proxy = self.df_proxy.loc[proxy_id, "proxy"]
                         self.df_proxy.loc[proxy_id, "BeingUsed"] = 1
-                        self.lock.release()
                     except:
-                        self.lock.release()
                         print("Đã có lỗi xảy ra", flush=True)
                         return
+                    finally: self.lock.release()
 
-                    driver = self.get_proxy_driver.checkDriver(proxy)
+                    self.lock.acquire()
+                    try: driver = self.get_proxy_driver.checkDriver(proxy)
+                    finally: self.lock.release()
 
                 driver_on = True
 
